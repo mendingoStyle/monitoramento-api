@@ -9,12 +9,17 @@ module.exports = (Sequelize, sequelize) => {
     imagem: {
       type: Sequelize.STRING,
       allowNull: false
+    },
+    binary: {
+      type: Sequelize.BLOB,
+      allowNull: false
     }
-  }, {
-    tableName: 'monitoramento.imagensCaptura',
-    freezeTableName: true,
-    version: 'version',
-    createdAt: 'createdAt',
-    updateAt: 'updatedAt'
-  })
+  },
+    {
+      tableName: 'monitoramento.imagensCaptura',
+      freezeTableName: true,
+      version: 'version',
+      createdAt: 'createdAt',
+      updateAt: 'updatedAt'
+    })
 }

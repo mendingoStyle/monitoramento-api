@@ -45,7 +45,7 @@ const routes = (app) => {
   app.use('/api/localizacoes/estados', estadoRouter)
   app.use('/api/localizacoes/cidades', cidadeRouter)
   app.use('/api/monitoramentos', monitoramentoRouter)
-  app.use('/api/capturas', authMiddleware.bearer, capturaRouter)
+  app.use('/api/capturas',  capturaRouter)
 
   
   /* error handler */

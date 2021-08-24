@@ -5,6 +5,18 @@ const db = require('../infrastructure/database/setup')
 const { Serializer } = require('../infrastructure/http/serializer')
 const InvalidArgumentError = require('../entities/errors/InvalidArgumentError')
 
+const multer = require('multer');
+const storage = multer.diskStorage({
+  destination: function(req,file,cb){
+    cb(null,'./uploads/')
+  },
+  filename: function(req,file,cb){
+    cb(null,file.originalname)
+  },
+})
+const upload = multer({storage : storage})
+
+
 const router = Router()
 
 router.options('/', (req, res) => {
@@ -27,17 +39,7 @@ router.options('/:id/historico', (req, res) => {
 
 router.get('/', async (req, res, next) => {
   try {
-    if (!req.query.page) {
-      throw new InvalidArgumentError('\'page\' query not provided')
-    }
-
-    const page = req.query.page
-    const size = req.query.size
-    const sort = req.query.sort
-    const direction = req.query.direction
-    const filter = req.query.filter
-
-    const list = await Captura.find(page, size, sort, direction, filter)
+    const list = await Captura.findAll()
     const serializer = new Serializer(res.getHeader('Content-Type'))
     res.status(200).send(serializer.serialize(list))
   } catch (error) {
@@ -55,6 +57,27 @@ router.get('/:id', async (req, res, next) => {
   }
 })
 
+router.get('/:id/imagens', async (req, res, next) => {
+  try {
+    const captura = await Captura.findImagemCapturaByid(req.params.id)
+    const serializer = new Serializer(res.getHeader('Content-Type'))
+    res.status(200).send(serializer.serialize(captura))
+  } catch (error) {
+    next(error)
+  }
+})
+
+
+router.get('/:name/imagem', async (req, res, next) => {
+  try {
+    const captura = await Captura.findImagemCapturaByUrl(req.params.name)
+    const serializer = new Serializer(res.getHeader('Content-Type'))
+    res.status(200).send(serializer.serialize(captura))
+  } catch (error) {
+    next(error)
+  }
+})
+
 router.get('/:id/historico', async (req, res, next) => {
   try {
     const captura = await HistoricoEdicaoCaptura.findByCapturaId(req.params.id)
@@ -65,13 +88,14 @@ router.get('/:id/historico', async (req, res, next) => {
   }
 })
 
-router.post('/', async (req, res, next) => {
+router.post('/', upload.single('file'), async (req, res, next) => {
   let transaction
-  
   try {
     transaction = await db.sequelize.transaction()
     const captura = new Captura(req.body)
     const result = await captura.add()
+
+    console.log(result)
     
     const serializer = new Serializer(res.getHeader('Content-Type'))
     res.status(201).send(serializer.serialize(result))

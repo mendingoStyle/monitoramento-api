@@ -24,9 +24,10 @@ const sequelize = new Sequelize(
       timestamps: true
     },
     pool: {
-      max: 5,
-      min: 0,
-      idle: 10000
+      max: 2500,
+      acquire: 120000,
+      min: 1,
+      idle: 100000,
     }
   }
 )

@@ -11,7 +11,7 @@ module.exports = (Sequelize, sequelize) => {
       allowNull: false
     },
     dataHora: {
-      type: Sequelize.STRING,
+      type: Sequelize.DATE,
       allowNull: false
     },
     detalhes: {

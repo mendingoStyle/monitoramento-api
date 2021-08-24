@@ -41,14 +41,17 @@ class Camera {
     }
   }
 
+
   /**
    * 
    * A camera deve ser cadastrada de forma automatica pelo sistema,
    * por isso ainda nao tem a localizacao.
    */
+
+  
+ 
   async add() {
     await this.validate()
-
     return CameraRepository.create({
       nome: this.nome,
       mac: this.mac,

@@ -320,7 +320,8 @@ module.exports = {
         },
         mac: {
           type: Sequelize.STRING(45),
-          allowNull: false
+          allowNull: false,
+          unique: true
         },
         observacoes: {
           type: Sequelize.STRING(255)
@@ -418,6 +419,10 @@ module.exports = {
         },
         imagem: {
           type: Sequelize.TEXT,
+          allowNull: false
+        },
+        binary:{
+          type: Sequelize.BLOB,
           allowNull: false
         },
         capturaId: {

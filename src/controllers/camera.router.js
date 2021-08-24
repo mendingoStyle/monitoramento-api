@@ -26,17 +26,7 @@ router.options('/:mac/mac', (req, res) => {
 
 router.get('/', async (req, res, next) => {
   try {
-    if (!req.query.page) {
-      throw new InvalidArgumentError('\'page\' query not provided')
-    }
-
-    const page = req.query.page
-    const size = req.query.size
-    const sort = req.query.sort
-    const direction = req.query.direction
-    const filter = req.query.filter
-
-    const list = await Camera.find(page, size, sort, direction, filter)
+    const list = await Camera.findAll()
     const serializer = new Serializer(res.getHeader('Content-Type'))
     res.status(200).send(serializer.serialize(list))
   } catch (error) {
