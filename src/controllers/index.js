@@ -33,6 +33,16 @@ const routes = (app) => {
     next()
   })
 
+  
+  /* cors */
+  app.options('*', (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.setHeader('Access-Control-Allow-Credentials', 'true')
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE')
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept, Authorization')
+    res.status(200).end()
+  })
+
   /* routes */
   app.use('/public/usuarios', userPublicRouter)
   app.use('/auth', authRouter)
