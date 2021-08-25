@@ -24,9 +24,9 @@ const routes = (app) => {
   app.use((req, res, next) => {
     const contentType = req.header('Accept')
 
-    if (Object.values(MimeType).indexOf(contentType) === -1) {
+    /*if (Object.values(MimeType).indexOf(contentType) === -1) {
       throw new InvalidContentTypeError(contentType)
-    }
+    }*/
 
     res.setHeader('Content-Type', contentType)
     res.setHeader('Access-Control-Allow-Origin', '*')

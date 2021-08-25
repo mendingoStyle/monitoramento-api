@@ -4,19 +4,20 @@ const CameraRepository = require('../infrastructure/database/setup').camera
 const HistoricoEdicaoCaptura = require('./HistoricoEdicaoCaptura')
 const InvalidArgumentError = require('./errors/InvalidArgumentError')
 const ImagensCaptura = require('../infrastructure/database/setup').imagemCaptura
+const ImagemCapturaEntities = require('../entities/ImagemCaptura')
+
 const Camera = require('./Camera')
 var fs = require('fs');
 
 class Captura {
-  constructor({ id, mac, placa, dataHora, url, file, detalhes, cameraId, monitoramentoId, createdAt, updatedAt, version }) {
+  constructor({ id, mac, placa, dataHora, url, detalhes, cameraId, monitoramentoId, createdAt, updatedAt, version }) {
     this.id = id
     this.placa = placa
     this.dataHora = dataHora
     this.detalhes = detalhes
     this.cameraId = cameraId
-    //this.monitoramentoId = monitoramentoId
+    this.monitoramentoId = monitoramentoId
     this.url = url
-    this.file = file
     this.createdAt = createdAt
     this.updatedAt = updatedAt
     this.version = version
@@ -43,76 +44,56 @@ class Captura {
       throw new InvalidArgumentError(`forneça a url`)
     }
 
-    let capturaCheck = await Captura.findImagemCapturaByUrl(this.url)
-    if (capturaCheck != null) {
+    let capturaCheck = await ImagemCapturaEntities.findImagemCapturaByUrlBool(this.url)
+    if (capturaCheck) {
       throw new InvalidArgumentError(`Capturas Já cadastradas`)
     }
-
-
 
   }
 
   async add() {
     await this.validate()
-    console.log('consultando o mac: ' + this.mac)
-    Camera.findByMac(this.mac)
-      .then(async r => {
-        console.log('mac consultado: ' + this.mac)
-        let newCamera;
+    return await Camera.findByMac(this.mac)
+      .then(async (r) => {
+        let newCamera = null
+        
+        // se a camera nao existir, cadastre
         if (!r) {
           let camera = new Camera({ nome: this.mac, mac: this.mac })
-          newCamera = await camera.add()
+          newCamera = await camera.addCapturaCamera()
         } else {
           newCamera = r
         }
 
         if (newCamera && newCamera.id) {
-
           return CapturaRepository.create({
             placa: this.placa,
             dataHora: this.dataHora,
             detalhes: this.detalhes,
             cameraId: newCamera.id,
             monitoramentoId: this.monitoramentoId
-          }).then(result => {
-            this.addImagem(result.id)
-            return Promise.resolve({ id: result.id })
+          }).then(async result => {
+            let add = await this.addImagem(result.id)
+            if (add) {
+              return Promise.resolve({ id: result.id })
+            } else {
+              return Promise.reject(new Error('nao foi possível cadastrar a imagem.'))
+            }
           }).catch(err => {
             return Promise.reject(err)
           })
+        } else {
+          return Promise.reject(new Error('nao foi possível cadastrar a camera.'))
         }
-
       }).catch(err => {
         return Promise.reject(err)
       })
-
-    // if (idCamera == null) {
-    //   let camera = new Camera({ nome: this.mac, mac: this.mac })
-    //   idCamera = await camera.add()
-    // }
-    // return CapturaRepository.create({
-    //   placa: this.placa,
-    //   dataHora: this.dataHora,
-    //   detalhes: this.detalhes,
-    //   cameraId: idCamera.id,
-    //   monitoramentoId: this.monitoramentoId
-    // }).then(r => {
-    //   this.addImagem(r.id)
-    //   return Promise.resolve({ id: r.id })
-    // }).catch(err => {
-    //   return Promise.reject(err)
-    // })
   }
-  async addImagem(id) {
 
-    fs.readFile('uploads/' + this.url, async (err, data) => {
-      if (!err) {
-        await ImagensCaptura.create({
-          capturaId: id,
-          imagem: this.url,
-          binary: data,
-        })
-      } else console.log(err)
+  async addImagem(id) {
+    return await ImagensCaptura.create({
+      capturaId: id,
+      imagem: this.url,
     })
   }
 
@@ -123,20 +104,16 @@ class Captura {
       if (r) {
         const valorAnterior = r.placa
         const valorAtual = this.placa
-
         r.placa = this.placa ? this.placa : r.placa
         await r.save()
-
         const historico = new HistoricoEdicaoCaptura({
           valorAnterior,
           valorAtual,
           usuarioId,
           capturaId: this.id
         })
-
         await historico.add()
       }
-
       return Promise.resolve()
     }).catch(err => {
       return Promise.reject(err)
@@ -154,6 +131,7 @@ class Captura {
       attributes: { exclude: ['cameraId'] }
     })
   }
+
 
   static async findImagemCapturaByUrl(url) {
     return await ImagensCaptura.findOne({

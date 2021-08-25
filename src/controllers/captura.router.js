@@ -4,18 +4,9 @@ const HistoricoEdicaoCaptura = require('../entities/HistoricoEdicaoCaptura')
 const db = require('../infrastructure/database/setup')
 const { Serializer } = require('../infrastructure/http/serializer')
 const InvalidArgumentError = require('../entities/errors/InvalidArgumentError')
-
-const multer = require('multer');
-const storage = multer.diskStorage({
-  destination: function(req,file,cb){
-    cb(null,'./uploads/')
-  },
-  filename: function(req,file,cb){
-    cb(null,file.originalname)
-  },
-})
-const upload = multer({storage : storage})
-
+const ImagemCaptura = require('../entities/ImagemCaptura')
+let Client = require('ftp');
+let fs = require('fs');
 
 const router = Router()
 
@@ -59,24 +50,69 @@ router.get('/:id', async (req, res, next) => {
 
 router.get('/:id/imagens', async (req, res, next) => {
   try {
-    const captura = await Captura.findImagemCapturaByid(req.params.id)
+    const imagemCaptura = await ImagemCaptura.findImagemCapturaByIdcaptura(req.params.id)
     const serializer = new Serializer(res.getHeader('Content-Type'))
-    res.status(200).send(serializer.serialize(captura))
+    res.status(200).send(serializer.serialize(imagemCaptura))
   } catch (error) {
     next(error)
   }
 })
-
 
 router.get('/:name/imagem', async (req, res, next) => {
   try {
-    const captura = await Captura.findImagemCapturaByUrl(req.params.name)
+    const imagemCaptura = await ImagemCaptura.findImagemCapturaByUrlBool(req.params.name)
     const serializer = new Serializer(res.getHeader('Content-Type'))
-    res.status(200).send(serializer.serialize(captura))
+    res.status(200).send(serializer.serialize(imagemCaptura))
   } catch (error) {
     next(error)
   }
 })
+
+
+
+router.get('/:name/imagem/captura', async (req, res, next) => {
+  try {
+    let c = new Client();
+    const imagemCaptura = await ImagemCaptura.findImagemCapturaByUrlBool(req.params.name)
+    if (imagemCaptura) {
+      c.get(req.params.name, async function (err, stream) {
+        if (err) {
+          next(err)
+        } else {
+          stream.pipe(fs.createWriteStream('public/' + req.params.name)).on('finish', async () => {
+            let s = fs.createReadStream('public/' + req.params.name);
+            s.on('open', function () {
+              res.setHeader('Content-Type', 'image/png');
+              s.pipe(res);
+            });
+            s.on('error', function () {
+              res.setHeader('Content-Type', 'text/plain');
+              res.statusCode = 404;
+              res.end('Not found');
+            });
+                 
+
+          })
+          stream.once('close', function() { c.end(); });
+        }
+
+      })
+    } else {
+      const serializer = new Serializer(res.getHeader('Content-Type'))
+      res.status(200).send(serializer.serialize(imagemCaptura))
+    }
+    var connectionProperties = {
+      user: "teste",
+      password: "teste",
+    };
+    c.connect(connectionProperties);
+  } catch (error) {
+    next(error)
+  }
+
+})
+
+
 
 router.get('/:id/historico', async (req, res, next) => {
   try {
@@ -88,15 +124,13 @@ router.get('/:id/historico', async (req, res, next) => {
   }
 })
 
-router.post('/', upload.single('file'), async (req, res, next) => {
+router.post('/', async (req, res, next) => {
   let transaction
   try {
     transaction = await db.sequelize.transaction()
     const captura = new Captura(req.body)
     const result = await captura.add()
 
-    console.log(result)
-    
     const serializer = new Serializer(res.getHeader('Content-Type'))
     res.status(201).send(serializer.serialize(result))
 
@@ -109,13 +143,13 @@ router.post('/', upload.single('file'), async (req, res, next) => {
 
 router.put('/:id', async (req, res, next) => {
   let transaction
-  
+
   try {
     transaction = await db.sequelize.transaction()
     const captura = new Captura(req.body)
     captura.id = req.params.id
     await captura.update(req.user.id)
-    
+
     res.status(204).send()
 
     await transaction.commit()

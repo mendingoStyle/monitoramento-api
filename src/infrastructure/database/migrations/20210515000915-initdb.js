@@ -421,10 +421,6 @@ module.exports = {
           type: Sequelize.TEXT,
           allowNull: false
         },
-        binary:{
-          type: Sequelize.BLOB,
-          allowNull: false
-        },
         capturaId: {
           type: Sequelize.INTEGER,
           references: {

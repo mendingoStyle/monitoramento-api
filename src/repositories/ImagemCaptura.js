@@ -10,10 +10,6 @@ module.exports = (Sequelize, sequelize) => {
       type: Sequelize.STRING,
       allowNull: false
     },
-    binary: {
-      type: Sequelize.BLOB,
-      allowNull: false
-    }
   },
     {
       tableName: 'monitoramento.imagensCaptura',

@@ -72,6 +72,24 @@ router.post('/', async (req, res, next) => {
   }
 })
 
+router.post('/verify', async (req, res, next) => {
+  let transaction
+  
+  try {
+    transaction = await db.sequelize.transaction()
+    const camera = new Camera(req.body)
+    const result = await camera.addCapturaCamera()
+    
+    const serializer = new Serializer(res.getHeader('Content-Type'))
+    res.status(201).send(serializer.serialize(result))
+
+    await transaction.commit()
+  } catch (error) {
+    if (transaction) await transaction.rollback()
+    next(error)
+  }
+})
+
 router.put('/:id', async (req, res, next) => {
   let transaction
   

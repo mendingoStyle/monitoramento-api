@@ -17,7 +17,7 @@ class Camera {
   }
 
   async validate() {
-    const fields = ['nome', 'mac']
+    const fields = ['mac']
     fields.forEach(field => {
       const value = this[field]
 
@@ -26,10 +26,7 @@ class Camera {
       }
     })
 
-    const exists = await Camera.findByMac(this.mac)
-    if (exists) {
-      throw new InvalidArgumentError(`mac = ${this.mac} already exists`)
-    }
+    
   }
 
   async validateUpdate() {
@@ -52,6 +49,10 @@ class Camera {
  
   async add() {
     await this.validate()
+    const exists = await Camera.findByMac(this.mac)
+    if (exists) {
+     return Promise.reject(new Error(`mac = ${this.mac} already exists`)) 
+    }
     return CameraRepository.create({
       nome: this.nome,
       mac: this.mac,
@@ -62,6 +63,24 @@ class Camera {
       return Promise.reject(err)
     })
   }
+  async addCapturaCamera() {
+    await this.validate()
+    const exists = await Camera.findByMac(this.mac)
+    if(exists){
+      return Promise.resolve({ id: exists.id })
+    } else {
+      return CameraRepository.create({
+        nome: this.mac,
+        mac: this.mac,
+        observacao: this.observacao
+      }).then(r => {
+        return Promise.resolve({ id: r.id })
+      }).catch(err => {
+        return Promise.reject(err)
+      })
+    }
+  }
+
 
   async update() {
     await this.validateUpdate()
