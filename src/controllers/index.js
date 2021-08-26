@@ -48,13 +48,13 @@ const routes = (app) => {
   app.use('/auth', authRouter)
 
   // app.use('/api/users', authMiddleware.bearer, userRouter)
-  app.use('/api/usuarios', userRouter)
-  app.use('/api/cameras', cameraRouter)
-  app.use('/api/localizacoes', localizacaoRouter)
-  app.use('/api/localizacoes/paises', paisRouter)
-  app.use('/api/localizacoes/estados', estadoRouter)
-  app.use('/api/localizacoes/cidades', cidadeRouter)
-  app.use('/api/monitoramentos', monitoramentoRouter)
+  app.use('/api/usuarios', authMiddleware.bearer, userRouter)
+  app.use('/api/cameras', authMiddleware.bearer, cameraRouter)
+  app.use('/api/localizacoes', authMiddleware.bearer, localizacaoRouter)
+  app.use('/api/localizacoes/paises', authMiddleware.bearer, paisRouter)
+  app.use('/api/localizacoes/estados', authMiddleware.bearer, estadoRouter)
+  app.use('/api/localizacoes/cidades', authMiddleware.bearer, cidadeRouter)
+  app.use('/api/monitoramentos', authMiddleware.bearer, monitoramentoRouter)
   app.use('/api/capturas',  capturaRouter)
 
   

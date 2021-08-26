@@ -96,8 +96,7 @@ async function login(req, res, next) {
 
     const accessToken = await jwt.generate(req.user.id, [1, 'h'])
     const refreshToken = await refreshTokenUtils.generate(req.user.id, [5, 'd'])
-    res.setHeader('Authorization', accessToken)
-    res.status(200).json({ refreshToken })
+    res.status(200).json({ refreshToken, accessToken })
   } catch (error) {
     throw new InternalServerError(error.message)
   }
