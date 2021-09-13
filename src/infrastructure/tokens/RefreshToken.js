@@ -1,5 +1,9 @@
-const refreshTokenAllowList = require('../../../redis/refreshTokenAllowList')
-const InvalidArgumentError = require('../../entities/errors/InvalidArgumentError')
+const path = require('path')
+const redisPath = path.resolve(process.cwd(), 'redis', 'refreshTokenAllowlist')
+const errorPath = path.resolve(process.cwd(), 'src', 'entities', 'errors', 'InvalidArgumentError')
+
+const refreshTokenAllowList = require(redisPath)
+const InvalidArgumentError = require(errorPath)
 
 const crypto = require('crypto')
 const moment = require('moment')
