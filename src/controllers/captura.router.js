@@ -130,7 +130,7 @@ router.post('/', async (req, res, next) => {
     transaction = await db.sequelize.transaction()
     const captura = new Captura(req.body)
     const result = await captura.add()
-
+    //verifica se essa captura foi uma captura de veiculo atualmente monitorada
     const serializer = new Serializer(res.getHeader('Content-Type'))
     res.status(201).send(serializer.serialize(result))
 
