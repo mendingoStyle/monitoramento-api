@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 const Router = require('express')
 const Captura = require('../entities/Captura')
 const HistoricoEdicaoCaptura = require('../entities/HistoricoEdicaoCaptura')
@@ -12,19 +14,31 @@ const router = Router()
 
 router.options('/', (req, res) => {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
   res.status(200).end()
 })
 
 router.options('/:id', (req, res) => {
   res.setHeader('Access-Control-Allow-Methods', 'GET, PUT')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  res.status(200).end()
+})
+
+router.options('/:id/imagens', (req, res) => {
+  res.setHeader('Access-Control-Allow-Methods', 'GET')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  res.status(200).end()
+})
+
+router.options('/:name/imagem/captura', (req, res) => {
+  res.setHeader('Access-Control-Allow-Methods', 'GET')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
   res.status(200).end()
 })
 
 router.options('/:id/historico', (req, res) => {
   res.setHeader('Access-Control-Allow-Methods', 'GET')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
   res.status(200).end()
 })
 
@@ -75,7 +89,7 @@ router.get('/:name/imagem/captura', async (req, res, next) => {
     let c = new Client();
     const imagemCaptura = await ImagemCaptura.findImagemCapturaByUrlBool(req.params.name)
     if (imagemCaptura) {
-      c.get(req.params.name, async function (err, stream) {
+      c.get(`${process.env.FTP_PATH}/${req.params.name}`, async function (err, stream) {
         if (err) {
           next(err)
         } else {
@@ -102,8 +116,10 @@ router.get('/:name/imagem/captura', async (req, res, next) => {
       res.status(200).send(serializer.serialize(imagemCaptura))
     }
     var connectionProperties = {
-      user: "teste",
-      password: "teste",
+      user: process.env.FTP_USER,
+      password: process.env.FTP_PASS,
+      host: process.env.FTP_HOST,
+      port: process.env.FTP_PORT
     };
     c.connect(connectionProperties);
   } catch (error) {
