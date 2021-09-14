@@ -38,6 +38,16 @@ router.get('/:id', async (req, res, next) => {
   }
 })
 
+router.get('/search/myself', async (req, res, next) => {
+  try {
+    const user = await Usuario.findById(req.user.id)
+    const serializer = new Serializer(res.getHeader('Content-Type'))
+    res.status(200).send(serializer.serialize(user))
+  } catch (error) {
+    next(error)
+  }
+})
+
 router.post('/', async (req, res, next) => {
   let transaction
   
