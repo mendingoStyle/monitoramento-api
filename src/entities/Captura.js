@@ -150,9 +150,9 @@ class Captura {
     })
   }
 
-  static find(page, size = 5, sort = 'placa', direction = 'ASC', filter = undefined) {
+  static find(page, size = 5, sort = 'placa', direction = 'ASC', filter = undefined, cameraId = undefined) {
     const offset = size * (page - 1)
-    const condition = !filter
+    let condition = !filter
       ? undefined
       : {
         [Op.or]: [
@@ -168,9 +168,30 @@ class Captura {
         ]
       }
 
+
+    let conditionCamera = !cameraId 
+      ? undefined
+      : {
+        [Op.and]: [
+          {
+            cameraId: cameraId
+          }
+        ]
+      }
+
+    let whereClause = undefined
+    if (condition) {
+      whereClause = condition
+      if (conditionCamera) {
+        whereClause = [ condition, conditionCamera ]
+      }
+    } else if (conditionCamera) {
+      whereClause = conditionCamera
+    }
+
     return CapturaRepository.findAndCountAll({
       raw: true,
-      where: condition,
+      where: whereClause,
       offset: offset,
       limit: +size,
       order: [
