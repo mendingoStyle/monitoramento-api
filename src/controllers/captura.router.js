@@ -18,6 +18,12 @@ router.options('/', (req, res) => {
   res.status(200).end()
 })
 
+router.options('/page', (req, res) => {
+  res.setHeader('Access-Control-Allow-Methods', 'GET')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  res.status(200).end()
+})
+
 router.options('/:id', (req, res) => {
   res.setHeader('Access-Control-Allow-Methods', 'GET, PUT')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
@@ -51,6 +57,28 @@ router.get('/', async (req, res, next) => {
     next(error)
   }
 })
+
+router.get('/page', async (req, res, next) => {
+  try {
+    if (!req.query.page) {
+      throw new InvalidArgumentError('\'page\' query not provided')
+    }
+
+    const page = req.query.page
+    const size = req.query.size
+    const sort = req.query.sort
+    const direction = req.query.direction
+    const filter = req.query.filter
+    const cameraId = req.query.camera
+
+    const list = await Captura.find(page, size, sort, direction, filter, cameraId)
+    const serializer = new Serializer(res.getHeader('Content-Type'))
+    res.status(200).send(serializer.serialize(list))
+  } catch (error) {
+    next(error)
+  }
+})
+
 
 router.get('/:id', async (req, res, next) => {
   try {
