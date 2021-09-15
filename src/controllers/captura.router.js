@@ -82,6 +82,17 @@ router.get('/:name/imagem', async (req, res, next) => {
   }
 })
 
+router.get('/:name/date', async (req, res, next) => {
+  try {
+    const captura = await Captura.findCapturasDate(req.params.name)
+    const serializer = new Serializer(res.getHeader('Content-Type'))
+    res.status(200).send(serializer.serialize(captura.length))
+  } catch (error) {
+    next(error)
+  }
+})
+
+
 
 
 router.get('/:name/imagem/captura', async (req, res, next) => {

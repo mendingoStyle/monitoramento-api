@@ -131,6 +131,11 @@ class Captura {
       attributes: { exclude: ['cameraId'] }
     })
   }
+   static async findCapturasDate(date){
+    return await CapturaRepository.findAll({
+      where: { dataHora: date}, 
+    })
+   }
 
 
   static async findImagemCapturaByUrl(url) {
