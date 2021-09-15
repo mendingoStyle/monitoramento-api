@@ -107,7 +107,7 @@ class Captura {
 
   async notifica(placa) {
     let m = await Monitoramento.findByplaca(placa);
-    if (m == null) {
+    if (m) {
      
       const message = {
         data: {
