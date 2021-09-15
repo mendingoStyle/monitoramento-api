@@ -95,7 +95,7 @@ module.exports = {
       },
       isContinuo: {
         type: Sequelize.INTEGER,
-        allowNull: false
+
       },
       status: {
         type: Sequelize.ENUM,

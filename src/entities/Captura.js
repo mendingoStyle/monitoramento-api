@@ -5,9 +5,16 @@ const HistoricoEdicaoCaptura = require('./HistoricoEdicaoCaptura')
 const InvalidArgumentError = require('./errors/InvalidArgumentError')
 const ImagensCaptura = require('../infrastructure/database/setup').imagemCaptura
 const ImagemCapturaEntities = require('../entities/ImagemCaptura')
-
+const Monitoramento = require('../entities/Monitoramento')
 const Camera = require('./Camera')
 var fs = require('fs');
+var admin = require('firebase-admin');
+var serviceAccount = require("../monitoramento-52c54-firebase-adminsdk-f21tu-098768f3b2.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+
 
 class Captura {
   constructor({ id, mac, placa, dataHora, url, detalhes, cameraId, monitoramentoId, createdAt, updatedAt, version }) {
@@ -56,7 +63,7 @@ class Captura {
     return await Camera.findByMac(this.mac)
       .then(async (r) => {
         let newCamera = null
-        
+
         // se a camera nao existir, cadastre
         if (!r) {
           let camera = new Camera({ nome: this.mac, mac: this.mac })
@@ -66,6 +73,7 @@ class Captura {
         }
 
         if (newCamera && newCamera.id) {
+          this.notifica(this.placa)
           return CapturaRepository.create({
             placa: this.placa,
             dataHora: this.dataHora,
@@ -95,6 +103,30 @@ class Captura {
       capturaId: id,
       imagem: this.url,
     })
+  }
+
+  async notifica(placa) {
+    let m = await Monitoramento.findByplaca(placa);
+    if (m == null) {
+     
+      const message = {
+        data: {
+          placa: placa,
+        },
+        token: 'fdJVlDgxTTunS_FBiv9BuY:APA91bFk7ZT5YtCs2Y9fePipHZ2SkrlcVTfJh3YHJyunqjuXoFyv9_aW0D33kkspxyp4wrc_BFiQWDDvullK8tIJK23K5swBwv004sXw-7j8eKraWLcCb3p4LrLserOPx7vbFGPrwUvM'
+      };
+      admin.messaging().send(message)
+        .then((response) => {
+          // Response is a message ID string.
+          console.log('Successfully sent message:', response);
+        })
+        .catch((error) => {
+          console.log('Error sending message:', error);
+        });
+
+    } else {
+      console.log('nao notifica -----------------')
+    }
   }
 
   async update(usuarioId) {
@@ -131,11 +163,11 @@ class Captura {
       attributes: { exclude: ['cameraId'] }
     })
   }
-   static async findCapturasDate(date){
+  static async findCapturasDate(date) {
     return await CapturaRepository.findAll({
-      where: { dataHora: date}, 
+      where: { dataHora: date },
     })
-   }
+  }
 
 
   static async findImagemCapturaByUrl(url) {
@@ -169,7 +201,7 @@ class Captura {
       }
 
 
-    let conditionCamera = !cameraId 
+    let conditionCamera = !cameraId
       ? undefined
       : {
         [Op.and]: [
@@ -183,7 +215,7 @@ class Captura {
     if (condition) {
       whereClause = condition
       if (conditionCamera) {
-        whereClause = [ condition, conditionCamera ]
+        whereClause = [condition, conditionCamera]
       }
     } else if (conditionCamera) {
       whereClause = conditionCamera

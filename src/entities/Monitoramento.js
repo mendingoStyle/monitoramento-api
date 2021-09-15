@@ -3,6 +3,7 @@ const MonitoramentoRepository = require('../infrastructure/database/setup').moni
 const UsuarioRepository = require('../infrastructure/database/setup').usuario
 const InvalidArgumentError = require('./errors/InvalidArgumentError')
 
+
 class Monitoramento {
   constructor({ id, placa, dataInicio, dataFim, observacoes, isContinuo, status, usuarioId, createdAt, updatedAt, version }) {
     this.id = id
@@ -39,12 +40,10 @@ class Monitoramento {
 
     return MonitoramentoRepository.create({
       placa: this.placa,
-      dataInicio: this.dataInicio,
-      dataFim: this.dataFim,
       observacoes: this.observacoes,
-      isContinuo: this.isContinuo,
       status: this.status,
-      usuarioId: this.usuarioId
+      usuarioId: this.usuarioId,
+      isContinuo: 1,
     }).then(r => {
       return Promise.resolve({ id: r.id })
     }).catch(err => {
@@ -70,6 +69,14 @@ class Monitoramento {
   static async findById(id) {
     return await MonitoramentoRepository.findOne({ 
       where: { id: id },
+      include: { model: UsuarioRepository },
+      attributes: { exclude: ['usuarioId'] }
+    })
+  }
+
+  static async findByplaca(placa) {
+    return await MonitoramentoRepository.findOne({ 
+      where: { placa: placa },
       include: { model: UsuarioRepository },
       attributes: { exclude: ['usuarioId'] }
     })
