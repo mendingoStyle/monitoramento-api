@@ -29,13 +29,11 @@ class Estado {
     }
   }
 
-  async add() {
-    await this.validate()
-
+   static async add(nome,pais) {
     return EstadoRepository.create({
       nome: this.nome,
-      sigla: this.sigla,
-      paisId: this.paisId
+      sigla: 'PR',
+      paisId: pais
     }).then(r => {
       return Promise.resolve({ id: r.id })
     }).catch(err => {
@@ -66,6 +64,14 @@ class Estado {
   static async findById(id) {
     return await EstadoRepository.findOne({ 
       where: { id: id },
+      include: { model: PaisRepository },
+      attributes: { exclude: ['paisId'] }
+    })
+  }
+
+  static async findName(name) {
+    return await EstadoRepository.findOne({ 
+      where: { name: name },
       include: { model: PaisRepository },
       attributes: { exclude: ['paisId'] }
     })

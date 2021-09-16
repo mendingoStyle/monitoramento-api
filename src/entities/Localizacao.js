@@ -2,9 +2,11 @@ const { Op } = require('sequelize')
 const LocalizacaoRepository = require('../infrastructure/database/setup').localizacao
 const CidadeRepository = require('../infrastructure/database/setup').cidade
 const InvalidArgumentError = require('./errors/InvalidArgumentError')
-
+const Estado = require('../entities/Estado')
+const Cidade = require('../entities/Cidade')
+const Pais = require('../entities/Pais')
 class Localizacao {
-  constructor({ id, latitude, longitude, rua, bairro, numero, zipcode, complemento, cidadeId, createdAt, updatedAt, version }) {
+  constructor({ id, latitude, longitude, pais, rua, bairro, numero, zipcode, complemento, cidade,estado, createdAt, updatedAt, version }) {
     this.id = id
     this.latitude = latitude
     this.longitude = longitude
@@ -13,8 +15,9 @@ class Localizacao {
     this.numero = numero
     this.zipcode = zipcode
     this.complemento = complemento
-    this.cidadeId = cidadeId
-
+    this.cidade = cidade
+    this.estado = estado
+    this.pais
     this.createdAt = createdAt
     this.updatedAt = updatedAt
     this.version = version
@@ -30,14 +33,25 @@ class Localizacao {
       }
     })
 
-    if (!this.cidadeId) {
-      throw new InvalidArgumentError(`cidadeId invalido`)
+    if (!this.cidade) {
+      throw new InvalidArgumentError(`cidade invalido`)
     }
   }
 
   async add() {
     await this.validate()
-
+    const pais = Pais.findByname(this.pais)
+    if(pais){
+      pais = Pais.add(pais)
+    }
+    const estado = Estado.findName(this.estado)
+    if(estado){
+      estado = Estado.add(this.estado, pais.id)
+    }
+    const cidade = Cidade.findName(this.cidade)
+    if(cidade){
+      cidade = Cidade.addCidade(this.cidade, estado)
+    }
     return LocalizacaoRepository.create({
       latitude: this.latitude,
       longitude: this.longitude,
@@ -46,7 +60,7 @@ class Localizacao {
       numero: this.numero,
       zipcode: this.zipcode,
       complemento: this.complemento,
-      cidadeId: this.cidadeId
+      cidadeId: cidade
     }).then(r => {
       return Promise.resolve({ id: r.id })
     }).catch(err => {

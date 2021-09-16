@@ -22,11 +22,11 @@ class Pais {
     })
   }
 
-  async add() {
-    await this.validate()
+  static async add(nome) {
+    //await this.validate()
 
     return PaisRepository.create({
-      nome: this.nome
+      nome: nome
     }).then(r => {
       return Promise.resolve({ id: r.id })
     }).catch(err => {
@@ -56,6 +56,12 @@ class Pais {
   static async findById(id) {
     return await PaisRepository.findOne({ 
       where: { id: id },
+      raw: true
+    })
+  }
+  static async findByname(name) {
+    return await PaisRepository.findOne({ 
+      where: { nome: name },
       raw: true
     })
   }

@@ -3,6 +3,7 @@ const CidadeRepository = require('../infrastructure/database/setup').cidade
 const EstadoRepository = require('../infrastructure/database/setup').estado
 const InvalidArgumentError = require('./errors/InvalidArgumentError')
 
+
 class Cidade {
   constructor({ id, nome, estadoId, createdAt, updatedAt, version }) {
     this.id = id
@@ -22,7 +23,7 @@ class Cidade {
         throw new InvalidArgumentError(`the field ${field} is invalid`)
       }
     })
-    
+
     if (!this.estadoId) {
       throw new InvalidArgumentError(`estadoId is invalid`)
     }
@@ -30,10 +31,19 @@ class Cidade {
 
   async add() {
     await this.validate()
-
     return CidadeRepository.create({
       nome: this.nome,
       estadoId: this.estadoId
+    }).then(r => {
+      return Promise.resolve({ id: r.id })
+    }).catch(err => {
+      return Promise.reject(err)
+    })
+  }
+  static async addCidade(nome, estadoid) {
+    return CidadeRepository.create({
+      nome: nome,
+      estadoId: estadoid
     }).then(r => {
       return Promise.resolve({ id: r.id })
     }).catch(err => {
@@ -53,7 +63,7 @@ class Cidade {
       return Promise.resolve()
     }).catch(err => {
       return Promise.reject(err)
-    })  
+    })
   }
 
   static async findAll() {
@@ -61,34 +71,43 @@ class Cidade {
   }
 
   static async findById(id) {
-    return await CidadeRepository.findOne({ 
+    return await CidadeRepository.findOne({
       where: { id: id },
       include: { model: EstadoRepository },
       attributes: { exclude: ['estadoId'] }
     })
   }
 
+  static async findName(id) {
+    return await CidadeRepository.findOne({
+      where: { name: id },
+      include: { model: EstadoRepository },
+      attributes: { exclude: ['estadoId'] }
+    })
+  }
+
+
   static find(page, size = 5, sort = 'nome', direction = 'ASC', filter = undefined) {
-    const offset = size * (page-1)
-    const condition = !filter 
+    const offset = size * (page - 1)
+    const condition = !filter
       ? undefined
       : {
-          [Op.or]: [
-            {
-              nome: { [Op.like]: `%${filter}%` }
-            }
-          ]
-        }
+        [Op.or]: [
+          {
+            nome: { [Op.like]: `%${filter}%` }
+          }
+        ]
+      }
 
     return CidadeRepository.findAndCountAll({
-        raw: true,
-        where: condition,
-        offset: offset,
-        limit: +size,
-        order: [
-          [sort, direction]
-        ]
-      })
+      raw: true,
+      where: condition,
+      offset: offset,
+      limit: +size,
+      order: [
+        [sort, direction]
+      ]
+    })
       .then(cidades => {
         const pages = Math.ceil(cidades.count / size)
         return {
