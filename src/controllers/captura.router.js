@@ -124,39 +124,63 @@ router.get('/:name/imagem/captura', async (req, res, next) => {
     let c = new Client();
     const imagemCaptura = await ImagemCaptura.findImagemCapturaByUrlBool(req.params.name)
     if (imagemCaptura) {
-      c.get(`${process.env.FTP_PATH}/${req.params.name}`, async function (err, stream) {
-        if (err) {
-          next(err)
-        } else {
-          stream.pipe(fs.createWriteStream('public/' + req.params.name)).on('finish', async () => {
-            let s = fs.createReadStream('public/' + req.params.name);
-            s.on('open', function () {
-              res.setHeader('Content-Type', 'image/png');
-              s.pipe(res);
-            });
-            s.on('error', function () {
-              res.setHeader('Content-Type', 'text/plain');
-              res.statusCode = 404;
-              res.end('Not found');
-            });
-                 
+      if (fs.existsSync('public/' + req.params.name)) {
+        console.log("existe")
+        let s = fs.createReadStream('public/' + req.params.name);
+        s.on('open', function () {
+          res.setHeader('Content-Type', 'image/png');
+          s.pipe(res);
 
-          })
-          stream.once('close', function() { c.end(); });
+        });
+        s.on('error', function () {
+          res.setHeader('Content-Type', 'text/plain');
+          res.statusCode = 404;
+          res.end('Not found');
+
+        });
+
+      } else {
+        c.get(`${process.env.FTP_PATH}/${req.params.name}`, async function (err, stream) {
+          if (err) {
+            next(err)
+          } else {
+            stream.pipe(fs.createWriteStream('public/' + req.params.name)).on('finish', async () => {
+              let s = fs.createReadStream('public/' + req.params.name);
+              s.on('open', function () {
+                res.setHeader('Content-Type', 'image/png');
+                s.pipe(res);
+              });
+              s.on('error', function () {
+                res.setHeader('Content-Type', 'text/plain');
+                res.statusCode = 404;
+                res.end('Not found');
+                next()
+              });
+
+
+            })
+            stream.once('close', function () { c.end(); });
+          }
+
+
+        })
+        var connectionProperties = {
+          user: process.env.FTP_USER,
+          password: process.env.FTP_PASS,
+          host: process.env.FTP_HOST,
+          port: process.env.FTP_PORT
+        };
+        try{
+          c.connect(connectionProperties);
+        } catch(e){
+          next(e)
         }
-
-      })
+      }
     } else {
       const serializer = new Serializer(res.getHeader('Content-Type'))
       res.status(200).send(serializer.serialize(imagemCaptura))
     }
-    var connectionProperties = {
-      user: process.env.FTP_USER,
-      password: process.env.FTP_PASS,
-      host: process.env.FTP_HOST,
-      port: process.env.FTP_PORT
-    };
-    c.connect(connectionProperties);
+
   } catch (error) {
     next(error)
   }
