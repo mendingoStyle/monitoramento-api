@@ -1,5 +1,6 @@
 const HistoricoEdicaoCapturaRepository = require('../infrastructure/database/setup').historicoEdicaoCaptura
 const InvalidArgumentError = require('./errors/InvalidArgumentError')
+const UsuarioRepository = require('../infrastructure/database/setup').usuario
 
 class HistoricoEdicaoCaptura {
   constructor({ id, valorAnterior, valorAtual, usuarioId, capturaId, createdAt, updatedAt, version }) {
@@ -51,7 +52,7 @@ class HistoricoEdicaoCaptura {
   static async findByCapturaId(id) {
     return await HistoricoEdicaoCapturaRepository.findAll({ 
       where: { capturaId: id },
-      raw: true
+      include: { model: UsuarioRepository }
     })
   }
 }

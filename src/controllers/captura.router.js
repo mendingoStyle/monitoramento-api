@@ -79,7 +79,6 @@ router.get('/page', async (req, res, next) => {
   }
 })
 
-
 router.get('/:id', async (req, res, next) => {
   try {
     const captura = await Captura.findById(req.params.id)
@@ -119,9 +118,6 @@ router.get('/:name/date', async (req, res, next) => {
     next(error)
   }
 })
-
-
-
 
 router.get('/:name/imagem/captura', async (req, res, next) => {
   try {
@@ -166,8 +162,6 @@ router.get('/:name/imagem/captura', async (req, res, next) => {
   }
 
 })
-
-
 
 router.get('/:id/historico', async (req, res, next) => {
   try {
