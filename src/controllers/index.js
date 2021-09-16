@@ -55,7 +55,8 @@ const routes = (app) => {
   app.use('/api/localizacoes/estados', authMiddleware.bearer, estadoRouter)
   app.use('/api/localizacoes/cidades', authMiddleware.bearer, cidadeRouter)
   app.use('/api/monitoramentos', authMiddleware.bearer, monitoramentoRouter)
-  app.use('/api/capturas',  capturaRouter)
+  app.use('/api/capturas', authMiddleware.bearer, capturaRouter)
+  app.use('/cron/capturas', capturaRouter)
 
   
   /* error handler */
