@@ -81,6 +81,20 @@ class Monitoramento {
       attributes: { exclude: ['usuarioId'] }
     })
   }
+  static update(placa) {
+    return MonitoramentoRepository.findOne({
+      where: { placa: placa },
+    }).then(async r => {
+      if (r) {
+        r.status = 'OCORRENCIA_ENCONTRADA'
+        await r.save()
+      }
+
+      return Promise.resolve()
+    }).catch(err => {
+      return Promise.reject(err)
+    })  
+  }
 
   static find(page, size = 5, sort = 'placa', direction = 'ASC', filter = undefined) {
     const offset = size * (page-1)

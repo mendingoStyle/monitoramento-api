@@ -73,7 +73,7 @@ class Captura {
         }
 
         if (newCamera && newCamera.id) {
-          this.notifica(this.placa)
+
           return CapturaRepository.create({
             placa: this.placa,
             dataHora: this.dataHora,
@@ -83,6 +83,7 @@ class Captura {
           }).then(async result => {
             let add = await this.addImagem(result.id)
             if (add) {
+              this.notifica(this.placa)
               return Promise.resolve({ id: result.id })
             } else {
               return Promise.reject(new Error('nao foi possível cadastrar a imagem.'))
@@ -107,7 +108,7 @@ class Captura {
 
   async notifica(placa) {
     let m = await Monitoramento.findByplaca(placa);
-    if (m == null) {
+    if (m) {
      
       const message = {
         data: {
@@ -116,17 +117,14 @@ class Captura {
         token: 'fdJVlDgxTTunS_FBiv9BuY:APA91bFk7ZT5YtCs2Y9fePipHZ2SkrlcVTfJh3YHJyunqjuXoFyv9_aW0D33kkspxyp4wrc_BFiQWDDvullK8tIJK23K5swBwv004sXw-7j8eKraWLcCb3p4LrLserOPx7vbFGPrwUvM'
       };
       admin.messaging().send(message)
-        .then((response) => {
-          // Response is a message ID string.
-          console.log('Successfully sent message:', response);
+        .then(() => {
+          Monitoramento.update(placa);
         })
         .catch((error) => {
           console.log('Error sending message:', error);
         });
 
-    } else {
-      console.log('nao notifica -----------------')
-    }
+    } 
   }
 
   async update(usuarioId) {

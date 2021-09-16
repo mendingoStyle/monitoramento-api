@@ -98,7 +98,6 @@ router.put('/:id', async (req, res, next) => {
     const camera = new Camera(req.body)
     camera.id = req.params.id
     await camera.update()
-    
     res.status(204).send()
 
     await transaction.commit()
