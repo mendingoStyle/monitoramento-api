@@ -56,7 +56,7 @@ class Camera {
     return CameraRepository.create({
       nome: this.nome,
       mac: this.mac,
-      observacao: this.observacao
+      observacoes: this.observacao
     }).then(r => {
       return Promise.resolve({ id: r.id })
     }).catch(err => {
@@ -72,7 +72,7 @@ class Camera {
       return CameraRepository.create({
         nome: this.mac,
         mac: this.mac,
-        observacao: this.observacao
+        observacoes: this.observacao
       }).then(r => {
         return Promise.resolve({ id: r.id })
       }).catch(err => {

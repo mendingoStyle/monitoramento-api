@@ -17,7 +17,7 @@ admin.initializeApp({
 
 
 class Captura {
-  constructor({ id, mac, placa, dataHora, url, detalhes, cameraId, monitoramentoId, createdAt, updatedAt, version }) {
+  constructor({ id, mac,observacoes, placa,modelo, dataHora, url, detalhes, cameraId, monitoramentoId, createdAt, updatedAt, version }) {
     this.id = id
     this.placa = placa
     this.dataHora = dataHora
@@ -26,9 +26,11 @@ class Captura {
     this.monitoramentoId = monitoramentoId
     this.url = url
     this.createdAt = createdAt
+    this.modelo = modelo
     this.updatedAt = updatedAt
     this.version = version
     this.mac = mac
+
   }
 
   async validate() {
@@ -50,6 +52,9 @@ class Captura {
     if (!this.url) {
       throw new InvalidArgumentError(`forneça a url`)
     }
+    if (!this.modelo) {
+      throw new InvalidArgumentError(`modelo invalido`)
+    }
 
     let capturaCheck = await ImagemCapturaEntities.findImagemCapturaByUrlBool(this.url)
     if (capturaCheck) {
@@ -66,7 +71,7 @@ class Captura {
 
         // se a camera nao existir, cadastre
         if (!r) {
-          let camera = new Camera({ nome: this.mac, mac: this.mac })
+          let camera = new Camera({ nome: this.mac, mac: this.mac, observacao: this.modelo })
           newCamera = await camera.addCapturaCamera()
         } else {
           newCamera = r
@@ -79,7 +84,8 @@ class Captura {
             dataHora: this.dataHora,
             detalhes: this.detalhes,
             cameraId: newCamera.id,
-            monitoramentoId: this.monitoramentoId
+            monitoramentoId: this.monitoramentoId,
+            observacoes: this.observacoes
           }).then(async result => {
             let add = await this.addImagem(result.id)
             if (add) {
