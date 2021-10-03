@@ -140,7 +140,7 @@ router.get('/:name/imagem/captura', async (req, res, next) => {
         });
 
       } else {
-        c.get(`${process.env.FTP_PATH}/${req.params.name}`, async function (err, stream) {
+        c.get(`${process.env.FTP_PATH}/${process.env.path_ftp_subdiretorio_lidas}/${req.params.name}`, async function (err, stream) {
           if (err) {
             next(err)
           } else {
