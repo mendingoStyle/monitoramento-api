@@ -2,6 +2,7 @@ const app = require('./app')
 const db = require('./infrastructure/database/setup')
 require('../redis/accessTokenBlocklist')
 require('../redis/refreshTokenAllowlist')
+require('../redis/notifier')
 
 const PORT = process.env.PORT || 9000
 

@@ -122,6 +122,8 @@ class Captura {
         },
         token: 'fdJVlDgxTTunS_FBiv9BuY:APA91bFk7ZT5YtCs2Y9fePipHZ2SkrlcVTfJh3YHJyunqjuXoFyv9_aW0D33kkspxyp4wrc_BFiQWDDvullK8tIJK23K5swBwv004sXw-7j8eKraWLcCb3p4LrLserOPx7vbFGPrwUvM'
       };
+      // TODO enviar notificacao via redis
+      
       admin.messaging().send(message)
         .then(() => {
           Monitoramento.update(placa);
