@@ -10,6 +10,8 @@ const Camera = require('./Camera')
 var fs = require('fs');
 var admin = require('firebase-admin');
 var serviceAccount = require("../monitoramento-52c54-firebase-adminsdk-f21tu-098768f3b2.json");
+const publish = require('../../redis/publisher')
+
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
@@ -123,6 +125,7 @@ class Captura {
         token: 'fdJVlDgxTTunS_FBiv9BuY:APA91bFk7ZT5YtCs2Y9fePipHZ2SkrlcVTfJh3YHJyunqjuXoFyv9_aW0D33kkspxyp4wrc_BFiQWDDvullK8tIJK23K5swBwv004sXw-7j8eKraWLcCb3p4LrLserOPx7vbFGPrwUvM'
       };
       // TODO enviar notificacao via redis
+      publish(placa)
       
       admin.messaging().send(message)
         .then(() => {
