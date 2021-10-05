@@ -49,8 +49,8 @@ class Usuario {
       isAtivo: 1,
       permissao: this.permissao
     }).then(r => {
-      const token = TokenFactory.create('JWT').generate(r.id, [1, 'h'])
-      EmailConfirmationMailer.send(r.email, token)
+      //const token = TokenFactory.create('JWT').generate(r.id, [1, 'h'])
+      //EmailConfirmationMailer.send(r.email, token)
       return Promise.resolve({ id: r.id })
     }).catch(err => {
       return Promise.reject(err)
